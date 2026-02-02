@@ -1,0 +1,11 @@
+langgraph 
+langchain-google-genai 
+langchain-core
+opencv-python 
+ 
+yt-dlp
+pydantic
+python-dotenv
+
+streamlit
+youtube-transcript-api
