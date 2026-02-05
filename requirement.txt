@@ -7,5 +7,12 @@ yt-dlp
 pydantic
 python-dotenv
 
-streamlit
+#streamlit
 youtube-transcript-api
+
+fastapi
+uvicorn
+
+google-api-python-client
+
+ipython
