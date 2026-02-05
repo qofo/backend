@@ -226,16 +226,20 @@ workflow.add_edge("analyst", END)
 
 graph_runner = workflow.compile()
 
-from IPython.display import Image, display
-from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
+# 이미지 저장 로직
+from langchain_core.runnables.graph import MermaidDrawMethod
 
-display(
-    Image(
-        graph_runner.get_graph().draw_mermaid_png(
-            draw_method=MermaidDrawMethod.API,
-        )
-    )
+# 1. png 데이터 가져오기
+png_data = graph_runner.get_graph().draw_mermaid_png(
+    draw_method=MermaidDrawMethod.API,
 )
+
+# 2. 파일로 저장하기
+file_path = "graph_output.png"
+with open(file_path, "wb") as f:
+    f.write(png_data)
+
+print(f"그래프가 {file_path}로 저장되었습니다.")
 
 # 프론트엔드가 호출하는 부분
 @app.post("/search", response_model=SearchResponse)
