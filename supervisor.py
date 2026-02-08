@@ -92,7 +92,7 @@ def text_analysis_node(state: AgentState):
     script = state['script_text']
     # Gemini 모델 설정
     # [TODO] : 모델을 무엇으로 할지 정해야 함
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
     
     # [TODO] : 프롬프트 수정해야 함
     prompt_text = f"""
@@ -108,21 +108,31 @@ def text_analysis_node(state: AgentState):
     3. **위험한 행동 유도 (Call to Action)**
 
     [최종 답변 형식]
-    ## 🚨 허위 광고 등 유해 콘텐츠 분석 결과
-
-    **1. 판정**: [고위험 스팸 및 사기 의심 / 주의 필요(과장 광고) / 안전한 콘텐츠]
-    **2. 위험도 점수**: [0~100점] (점수가 높을수록 위험)
-
-    **3. 주요 적발 소견**:
-       - **[자극적 키워드]**:
-       - **[심리 조작 기법]**:
-       - **[유도 방식]**:
-
-    **4. 최종 요약**:
+    허위 광고 등 유해 콘텐츠 분석 결과
     """
 
-    response = llm.invoke([HumanMessage(content=prompt_text)])
-    return {"analysis_result": response.content}
+    # 구조화된 출력
+    from pydantic import BaseModel, Field
+
+    class Report(BaseModel):
+        estimation: str = Field(description="[고위험 / 주의 필요 / 안전] 중 하나로 판단해주세요.")
+        detail: str = Field(description="주요 적발 소견으로 자극적 키워드, 심리 조작 기법, 유도 방식을 설명해주세요.")
+        summary: str = Field(description="20자 내외의 짧은 문장으로 요약해주세요.")
+
+    structed_model = llm.with_structured_output(Report)
+
+
+
+    response = structed_model.invoke([HumanMessage(content=prompt_text)])
+    
+    print("전체 응답: ", response)
+    response_dict = dict(response)
+    result = f'[{response_dict.get("estimation", "error")}] {response_dict.get("summary", "error입니다")}'
+
+    print("result: ", result)
+    return {"analysis_result": result}
+    #response = llm.invoke([HumanMessage(content=prompt_text)])
+    #return {"analysis_result": response.content}
 
 
 def build_graph():

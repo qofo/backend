@@ -35,17 +35,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 1. 데이터 모델 (Pydantic) ---
-class AnalyzeRequest(BaseModel):
-    youtube_url: str
-
-class AnalyzeResponse(BaseModel):
-    video_id: Optional[str] = None
-    analysis_result: Optional[str] = None
-    error: Optional[str] = None
-
-
-
 # 프론트엔드가 요청하는 내용
 class SearchRequest(BaseModel):
     title: str
@@ -127,6 +116,8 @@ def search_video_endpoint(request: SearchRequest):
             found=False,
             message=search_result["error"]
         )
+    
+    print("검색 에러는 넘어감")
 
     # 2-2. 검색 결과 없음 처리
     if not search_result:
@@ -147,7 +138,10 @@ def search_video_endpoint(request: SearchRequest):
             # 슈퍼바이저: 데이터 전송 및 리포트 생성
             initial_state = {"youtube_url": search_result['url']}
             analysis_output = graph_runner.invoke(initial_state)
+            #analysis_output = {"analysis_result": "테스트데이터입니다"}
             print("분석 결과: ", analysis_output.get("analysis_result"))
+
+            # [TODO]: 백엔드: llm의 결과 파싱
 
             # [TODO]: 백엔드: DB에 리포트 내용 업데이트 저장
             
@@ -180,6 +174,7 @@ def search_video_endpoint(request: SearchRequest):
 
 @app.get("/")
 def health_check():
+    print("/ get test")
     return {"status": "ok", "message": "Server is running"}
 
 
@@ -187,6 +182,6 @@ graph_runner = build_graph()
 if __name__ == "__main__":
     import uvicorn
 
-    
+    print("test")
 
     uvicorn.run("backend:app", host="127.0.0.1", port=8000, reload=True)
